@@ -90,7 +90,7 @@ class Snow {
 const getTrueNumber = (num) => num < 0 ? num : num < 10 ? "0" + num : num;
 
 const calculateRemainingTime = (timezone="America/Los_Angeles") => {
-  const comingYear = Number(moment.tz(timezone).format("YYYY"));
+  const comingYear = Number(moment.tz(timezone).format("YYYY"))+1;
   const comingDate = moment.tz([comingYear,0,1,0,0,0], timezone);
 
   const remainingTime = new Date(comingDate.format()).getTime() - new Date().getTime();
@@ -158,19 +158,6 @@ function initCountdown() {
     }
   
   }, 1000)
-  
-  
-  // setInterval(() => {
-  //   const {ms:timeMs, countdown} = calculateRemainingTime();
-  //   if(countdown.days == 0) d.parentElement.style = "display: none;";
-  //   if(countdown.hours == 0 && countdown.days == 0) h.parentElement.style = "display: none;";
-  //   if(countdown.mins == 0 && countdown.hours == 0 && countdown.days == 0) m.parentElement.style = "display: none;";
-
-  //   if(countdown.secs == 39 && countdown.mins == 0 && countdown.hours == 0 && countdown.days == 0) {
-      
-      
-  //   }
-  // }, 1000);
 }
 
 // initCountdown();
