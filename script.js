@@ -87,71 +87,90 @@ class Snow {
 ////////////////////////////////////////////////////////////
 // Simple CountDown Clock
 
-const d = document.getElementById("d");
-const h = document.getElementById("h");
-const m = document.getElementById("m");
-const s = document.getElementById("s");
+const getTrueNumber = (num) => num < 0 ? num : num < 10 ? "0" + num : num;
 
-function getTrueNumber(num) {
-  return num < 0 ? num : num < 10 ? "0" + num : num;
-}
+const calculateRemainingTime = (timezone="America/Los_Angeles") => {
+  const comingYear = Number(moment.tz(timezone).format("YYYY"));
+  const comingDate = moment.tz([comingYear,0,1,0,0,0], timezone);
 
-function calculateRemainingTime() {
-  const comingYear = new Date().getFullYear() + 1;
-  const comingDate = new Date(`Jan 1, ${comingYear} 00:00:00`);
-
-  const now = new Date();
-  const remainingTime = comingDate.getTime() - now.getTime();
+  const remainingTime = new Date(comingDate.format()).getTime() - new Date().getTime();
   const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
   const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const mins = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
   const secs = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
-  d.innerHTML = getTrueNumber(days);
-  h.innerHTML = getTrueNumber(hours);
-  m.innerHTML = getTrueNumber(mins);
-  s.innerHTML = getTrueNumber(secs); 
-
-  return {ms: remainingTime, countdown: {days,hours,mins,secs} };
+  return {ms: remainingTime, s: Math.floor(remainingTime/1000), countdown: {days,hours,mins,secs} };
 }
 
+const editTime = (timeId, timezone) => {
+  const time = calculateRemainingTime(timezone);
+  const {days,hours,mins,secs} = time.countdown;
+  if(time.s < 0) return time;
+
+  if(time.s > 24*60*60 || time.s == 0) {
+    document.querySelector(`#${timeId} #dd`).parentElement.style = "";
+    document.querySelector(`#${timeId} #dd`).innerHTML = time.s == 0 ? "00" : days;
+  }
+  else document.querySelector(`#${timeId} #dd`).parentElement.style = "display:none";
+
+  if(time.s > 60*60 || time.s == 0) {
+    document.querySelector(`#${timeId} #hh`).parentElement.style = "";
+    document.querySelector(`#${timeId} #hh`).innerHTML = getTrueNumber(hours);
+  }
+  else document.querySelector(`#${timeId} #hh`).parentElement.style = "display:none";
+
+  if(time.s > 60 || time.s == 0) {
+    document.querySelector(`#${timeId} #mm`).parentElement.style = "";
+    document.querySelector(`#${timeId} #mm`).innerHTML = getTrueNumber(mins);
+  }
+  else document.querySelector(`#${timeId} #mm`).parentElement.style = "display:none";
+
+  document.querySelector(`#${timeId} #ss`).innerHTML = time.s < 10 ? time.s == 0 ? "00" : secs : getTrueNumber(secs);
+
+  return time;
+}
+
+
+
 function initCountdown() {
-  let isSnowing = false;
-  let snowCanvas = null;
-  d.parentElement.style = "";
-  h.parentElement.style = "";
-  m.parentElement.style = "";
-  s.parentElement.style = "";
-  document.getElementById('middle').style = "";
+  let isSnowing = true;
+  let snowCanvas = new Snow();
+  
+  document.querySelector('.middle').style = "";
   document.getElementById('countVideo').style = "display: none;";
   const interval = setInterval(() => {
-    const {ms:timeMs, countdown} = calculateRemainingTime();
-    if(countdown.days == 0) d.parentElement.style = "display: none;";
-    if(countdown.hours == 0 && countdown.days == 0) h.parentElement.style = "display: none;";
-    if(countdown.mins == 0 && countdown.hours == 0 && countdown.days == 0) m.parentElement.style = "display: none;";
-
-    if(countdown.secs == 39 && countdown.mins == 0 && countdown.hours == 0 && countdown.days == 0) {
+    const time = editTime("losangeles", "America/Los_Angeles");
+    editTime("ukraine", "EET");
+    editTime("newyork", "EST");
+    editTime("hawaii", "HST");
+  
+    if(time.s == 39) {
       document.getElementById('countVideo').style = "";
-      document.getElementById('middle').style = "display: none;";
+      document.querySelector('.middle').style = "display: none;";
       document.getElementById('countVideo').play();
-      
+      snowCanvas.canvas.remove();
+      isSnowing = false;
+
       setTimeout(() => {
-        snowCanvas.canvas.remove();
         clearInterval(interval);
         initCountdown()
       }, 62*1000);
     }
+  
+  }, 1000)
+  
+  
+  // setInterval(() => {
+  //   const {ms:timeMs, countdown} = calculateRemainingTime();
+  //   if(countdown.days == 0) d.parentElement.style = "display: none;";
+  //   if(countdown.hours == 0 && countdown.days == 0) h.parentElement.style = "display: none;";
+  //   if(countdown.mins == 0 && countdown.hours == 0 && countdown.days == 0) m.parentElement.style = "display: none;";
 
-    if(isSnowing === false && timeMs <= 120000) {
-      isSnowing = true;
-      snowCanvas = new Snow();
-    }
-    // if (timeMs <= 1000) {
-    //   snowCanvas.canvas.remove();
-    //   clearInterval(interval);
-    //   initCountdown();
-    // }
-  }, 1000);
+  //   if(countdown.secs == 39 && countdown.mins == 0 && countdown.hours == 0 && countdown.days == 0) {
+      
+      
+  //   }
+  // }, 1000);
 }
 
-initCountdown();
+// initCountdown();
